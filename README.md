@@ -1,40 +1,51 @@
-# [App name]
+# Black-Scholes Option Pricer (practice)
 
-MSF 8615 Derivatives, Villanova University · Team: [names]
+MSF 8615 Derivatives, Villanova University · Team: Ben Hennig (individual practice repository)
 
-**Live app:** [Streamlit link, once deployed]
-
-> **Using this template.** On this page, click **Use this template → Create a new repository**
-> (one per team), then invite your teammates. Work in that new repository, not here: a Codespace
-> opened on the template itself saves your commits as a fork of the template, which is public.
-> Then replace every [bracketed] placeholder below and delete this note.
+**Live app:** not deployed yet. Run it locally with `streamlit run app.py` (opens at http://localhost:8501).
 
 ## The question
-[One or two sentences: what decision, calculation, or risk does the app help a user understand?]
+What is a European call and put on a non-dividend-paying stock worth under Black-Scholes-Merton, and do
+the two prices satisfy put-call parity?
 
 ## Inputs and outputs
-- **Inputs:** [what the user enters or uploads]
-- **Outputs:** [numbers, charts, and what they mean]
+- **Inputs:** underlying price S, strike K, time to expiry T (years), risk-free rate r (% per year,
+continuously compounded) and volatility sigma (% per year), all typed in by the user.
+- **Outputs:** the Black-Scholes call price c and put price p, plus a put-call parity check showing
+c − p next to S − K·e^(−rT). The two numbers should match; if they do not, something is wrong in the code.
 
 ## Data
-[Where each file in `data/` comes from, when it was saved, and what is observed versus assumed.]
+The app uses no data files. Every input is typed in by the user, and the defaults (S = 42, K = 40,
+r = 10%, sigma = 20%, T = 0.5) are the hypothetical worked example from Hull, not observed market prices.
 
 | File in `data/` | Source | Date and time saved | Terms of use: can it be public? |
 |---|---|---|---|
-| | | | |
+| (none used) | n/a | n/a | n/a |
 
 - Save market data as dated files, for example `cboe_spx-options_2026-10-20.csv`, and show the date
-  on screen.
+on screen.
 - Licensed data (Bloomberg, FactSet, Risk.net, WRDS, ...) does not go into a public repository or
-  into AI tools. Keep it in `data/licensed/` (ignored by git) and run your code on it yourself.
+into AI tools. Keep it in `data/licensed/` (ignored by git) and run your code on it yourself.
 - Hypothetical inputs and stress scenarios are fine. Label them as such.
 
 ## Method
-[Formulas and model assumptions, in plain English. Cite the textbook section.]
+Black-Scholes-Merton for European options on a stock that pays no dividends (Hull, *Options, Futures,
+and Other Derivatives*, 11th ed., Ch. 15):
+
+- d1 = [ln(S/K) + (r + sigma²/2)·T] / (sigma·√T), and d2 = d1 − sigma·√T
+- Call: c = S·N(d1) − K·e^(−rT)·N(d2)
+- Put: p = K·e^(−rT)·N(−d2) − S·N(−d1)
+
+N(·) is the standard normal cumulative distribution function, computed with the error function in
+`pricing.py`. The model assumes the stock price follows geometric Brownian motion with constant volatility
+and a constant risk-free rate, no dividends, no transaction costs, and exercise only at expiry.
 
 ## Tests
 Run `pytest`. Each test compares the code with a number checked independently:
 - `tests/test_pricing.py`: Black-Scholes prices match Hull's Chapter 15 example; put-call parity holds.
+  - Call = 4.76 and put = 0.81 for S = 42, K = 40, r = 10%, sigma = 20%, T = 0.5 (Hull, Ch. 15).
+  - c − p equals S − K·e^(−rT) to within 1e-9.
+  - A negative volatility raises an error instead of returning a price.
 
 The agent skill in `.agents/skills/check-the-numbers/` tells coding agents how to add checks like these.
 
@@ -50,15 +61,21 @@ New to Streamlit? [`docs/streamlit.md`](docs/streamlit.md) explains how an app w
 reruns from top to bottom on every click), with caching, layout and deployment.
 
 ## Limitations
-[What the app cannot tell you. Which inputs are scenarios rather than observed prices?]
+- European exercise only: it does not price American options, where early exercise can matter (for
+example, American puts).
+- No dividends: the prices are wrong for stocks or indexes that pay dividends before expiry.
+- Volatility and the risk-free rate are user assumptions, held constant; real implied volatility varies by
+strike and maturity (the smile), so a single sigma will not reproduce market prices across strikes.
+- All inputs are scenarios typed by the user, not observed prices.
 
 ## AI use
-[Short summary. Details in `AI_LOG.md`.]
+Setup and this README were drafted with help from Claude (Anthropic). No AI wrote pricing code so far.
+Details in `AI_LOG.md`.
 
 ## Team contributions
 | Name | GitHub username | Main contributions |
 |---|---|---|
-| | | |
+| Ben Hennig | benhennig | Repository setup, README |
 
 ---
 
